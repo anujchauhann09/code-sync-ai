@@ -1,15 +1,23 @@
-import React, { useContext, useState } from 'react';
+import React, { useContext, useState, useEffect } from 'react';
 import { UserContext } from '../context/user.context.jsx';
 import axios from '../config/axios.js';
+import {useNavigate} from 'react-router-dom';
 
 const Home = () => {
     const { user } = useContext(UserContext);
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [projectName, setProjectName] = useState('');
+    const [project, setProject] = useState([]);
+
+    const navigate = useNavigate();
 
     const createProject = () => {
         setIsModalOpen(true); 
     };
+
+    useEffect(() => {
+        axios.get('/projects/all').then((res) => setProject(res.data.projects)).catch((error) => console.log(error));
+    }, []);
 
     const handleFormSubmit = (e) => {
         e.preventDefault();
@@ -28,14 +36,25 @@ const Home = () => {
 
     return (
         <main className="p-4">
-            <div className="projects flex justify-start">
+            <div className="projects flex flex-col flex-wrap gap-3 justify-start items-start space-y-2">
                 <button
                     onClick={createProject}
-                    className="project p-4 border border-slate-300 rounded-md bg-blue-500 text-white hover:bg-blue-600"
+                    className="project p-4 border border-slate-300 rounded-md bg-blue-500 text-white hover:bg-blue-600 w-auto"
                 >
                     <i className="ri-link"></i> Create Project
                 </button>
+
+                {project.map((project) => (
+                    <div key={project._id} onClick={() => { navigate(`/project`, { state: {project} }) }} className="project flex flex-col items-start gap-2 p-4 w-auto border border-slate-300 rounded-md min-w-52 hover:bg-slate-100 ">
+                        <h2 className='font-semibold'>{project.name}</h2>
+                        
+                        <div className='flex gap-2'>
+                            <p><i className="ri-user-line"></i> <small>Collaborators</small> : {project.users.length}</p>
+                        </div>
+                    </div>
+                ))}
             </div>
+
 
             {isModalOpen && (
                 <div className="fixed inset-0 bg-gray-800 bg-opacity-50 flex items-center justify-center z-50">
