@@ -18,7 +18,7 @@ export const createProjectController = async (req, res) => {
 
         const newProject = await projectService.createProject({name, userId});
 
-        return res.status(201).json(newProject);
+        return res.status(201).json({newProject});
     } catch (error) {
         return res.status(401).json({errors: error.message});
     }

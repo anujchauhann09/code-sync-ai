@@ -26,7 +26,7 @@ const Home = () => {
         axios.post('projects/create', {
             name: projectName
         }).then((res) => {
-            console.log(res)
+            console.log(res);
             setIsModalOpen(false); 
             setProjectName(''); 
         }).catch((err) => {
