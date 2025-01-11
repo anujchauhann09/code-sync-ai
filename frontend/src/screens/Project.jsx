@@ -1,6 +1,7 @@
 import axios from '../config/axios.js';
 import React, {useEffect, useState} from 'react';
 import { useLocation } from 'react-router-dom';
+import { initiliazeSocket, receiveMessage, sendMessage } from '../config/socket.js';
 
 const Project = () => {
     const [isSidePanelOpen, setIsSidePanelOpen] = useState(false);
@@ -47,6 +48,8 @@ const Project = () => {
     };
 
     useEffect(() => {
+        initiliazeSocket();
+
         axios
             .get(`/projects/get-project/${location.state.project._id}`)
             .then((res) => {

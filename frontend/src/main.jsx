@@ -5,7 +5,7 @@ import 'remixicon/fonts/remixicon.css'
 import App from './App.jsx'
 
 createRoot(document.getElementById('root')).render(
-  <StrictMode>
+  // <StrictMode> // 2 time render/run
     <App />
-  </StrictMode>,
+  // </StrictMode>
 )
