@@ -1,5 +1,6 @@
 import axios from '../config/axios.js';
-import React, {useEffect, useState} from 'react';
+import React, {useEffect, useState, useContext, createRef} from 'react';
+import { UserContext } from '../context/user.context.jsx';
 import { useLocation } from 'react-router-dom';
 import { initiliazeSocket, receiveMessage, sendMessage } from '../config/socket.js';
 
@@ -8,6 +9,10 @@ const Project = () => {
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [selectedUserId, setSelectedUserId] = useState([]);
     const [users, setUsers] = useState([]);
+    const [message, setMessage] = useState('');
+
+    const messageBox = createRef();
+    const { user } = useContext(UserContext);
 
     const location = useLocation();
     // console.log(location.state);
@@ -47,8 +52,58 @@ const Project = () => {
         }
     };
 
+    function handleSendMessage() {
+        sendMessage('project-message', {
+            message,
+            sender: user
+        });
+
+        appendOutgoingMessage(message);
+        setMessage('');
+    }
+
+    function appendIncomingMessage(messageObject) {
+        const messageBox = document.querySelector('.message-box');
+        const message = document.createElement('div');
+
+        message.classList.add('incoming', 'message', 'max-w-56', 'flex', 'flex-col', 'p-2', 'bg-slate-50', 'w-fit', 'rounded-md');
+        message.innerHTML = `
+            <small class='opacity-65 text-xs'>${messageObject.sender.email}</small>
+
+            <p class='text-sm break-words'>${messageObject.message}</p>
+        `;
+
+        messageBox.appendChild(message);
+        scrollToBottom();
+    }
+
+    function appendOutgoingMessage(message) {
+        const messageBox = document.querySelector('.message-box');
+        const newMessage = document.createElement('div');
+
+        newMessage.classList.add('outgoing', 'message', 'max-w-56', 'ml-auto', 'flex', 'flex-col', 'p-2', 'bg-slate-50', 'w-fit', 'rounded-md');
+        newMessage.innerHTML = `
+            <small class='opacity-65 text-xs'>${user.email}</small>
+
+            <p class='text-sm break-words'>${message}</p>
+        `;
+
+        messageBox.appendChild(newMessage);
+        scrollToBottom();
+    }
+
+    function scrollToBottom() {
+        messageBox.current.scrollTop = messageBox.current.scrollHeight;
+    }
+
     useEffect(() => {
-        initiliazeSocket();
+        initiliazeSocket(project._id);
+
+        receiveMessage('project-message', data => {
+            appendIncomingMessage(data);
+
+            console.log(data);
+        })
 
         axios
             .get(`/projects/get-project/${location.state.project._id}`)
@@ -74,8 +129,8 @@ const Project = () => {
 
     return (
         <main className='h-screen w-screen flex'>
-            <section className="left relative flex flex-col h-full min-w-96 bg-slate-300">
-                <header className='flex justify-between items-center p-2 px-4 w-full bg-slate-100'>
+            <section className="left relative flex flex-col h-screen min-w-96 bg-slate-300">
+                <header className='flex justify-between items-center p-2 px-4 w-full bg-slate-100 absolute top-0'>
                 <   button className="flex gap-1" onClick={() => setIsModalOpen(true)}>
                         <i className="ri-add-fill"></i>
                         <p>Add collaborator</p>
@@ -86,22 +141,16 @@ const Project = () => {
                     </button>
                 </header>
 
-                <div className="conversation-box flex flex-col flex-grow">
-                    <div className="message-box p-1 flex-grow flex flex-col gap-1">
-                        <div className="incoming max-w-56 message flex flex-col p-2 bg-slate-50 w-fit rounded-md">
-                            <small className='opacity-65 text-xs'>example@gmail.com</small>
-                            <p className='text-sm break-words'>Lorem ipsum dolor sit amet consectetur adipisicing elit. Obcaecati quam magni facere at expedita aut officia eius omnis, rerum voluptate?</p>
-                        </div>
-
-                        <div className="outgoing max-w-56 message ml-auto flex flex-col p-2 bg-slate-50 w-fit rounded-md">
-                            <small className='opacity-65 text-xs'>example@gmail.com</small>
-                            <p className='text-sm break-words'>Lorem ipsum dolor sit amet consectetur adipisicing elit. Officiis debitis eius vero consequatur dolore aut unde mollitia optio dicta enim quis repudiandae, ipsa facilis numquam alias laboriosam nostrum adipisci. Aliquid.</p>
-                        </div>
-                    </div>
+                <div className="conversation-box flex flex-col flex-grow pt-16 py-12 h-full relative">
+                <div 
+                    ref={messageBox}
                     
-                    <div className="input-field w-full flex">
-                        <input type="text" placeholder='Enter message' className='p-2 outline-0 px-4 border-none flex-grow' />
-                        <button className='px-5 bg-slate-950 text-white'>
+                    className="message-box p-1 flex-grow flex flex-col gap-1 overflow-auto max-h-full">
+                </div>
+                
+                <div className="input-field w-full flex absolute bottom-0">
+                        <input type="text" value={message} onChange={(e) => setMessage(e.target.value)} placeholder='Enter message' className='p-2 outline-0 px-4 border-none flex-grow' />
+                        <button onClick={handleSendMessage} className='px-5 bg-slate-950 text-white'>
                             <i className="ri-send-plane-fill"></i>
                         </button>
                     </div>
