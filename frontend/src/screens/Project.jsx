@@ -152,7 +152,9 @@ const Project = () => {
                             <div
                                 key={index}
                                 className={`message ${msg.type} flex flex-col p-2 bg-slate-50 w-fit rounded-md ${
-                                    msg.type === 'outgoing' ? 'ml-auto max-w-56' : 'max-w-80'
+                                    msg.type === 'outgoing' ? 'ml-auto' : ''
+                                } ${
+                                    msg.sender._id === 'ai' ? 'max-w-80' : 'max-w-56'
                                 }`}
                             >
                                 <small className='opacity-65 text-xs'>{msg.sender.email}</small>
