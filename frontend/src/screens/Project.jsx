@@ -5,7 +5,7 @@ import { useLocation } from 'react-router-dom';
 import { initiliazeSocket, receiveMessage, sendMessage } from '../config/socket.js';
 import Markdown from 'markdown-to-jsx';
 
-function SyntaxHighlightedCode(props) {
+function syntaxHighlightedCode(props) {
     const ref = useRef(null)
 
     React.useEffect(() => {
@@ -78,16 +78,16 @@ const Project = () => {
     }
 
     function writeAiMessage(message) {
-        // const messageObject = JSON.parse(message);
+        const messageObject = JSON.parse(message);
 
         return (
             <div className='overflow-auto bg-slate-950 text-white rounded-sm p-2'>
                 <Markdown 
-                    children={message}
-                    // children={messageObject.text}
+                    // children={message}
+                    children={messageObject.text}
                     options={{
                         overrides: {
-                            code: SyntaxHighlightedCode,
+                            code: syntaxHighlightedCode,
                         },
                     }}
                 />
