@@ -27,6 +27,18 @@ const Project = () => {
     const [users, setUsers] = useState([]);
     const [message, setMessage] = useState('');
     const [messages, setMessages] = useState([]); 
+    const [fileTree, setFileTree] = useState({
+        "app.js": {
+            content: `const express = require('express');`
+        },
+        "package.json": {
+            content: `{
+                "name": "temp-server",
+            }`
+        },
+    });
+    const [currentFile, setCurrentFile] = useState(null);
+    const [openFiles, setOpenFiles] = useState([]);
 
     const messageBox = createRef();
     const { user } = useContext(UserContext);
@@ -80,7 +92,7 @@ const Project = () => {
     function writeAiMessage(message) {
         const messageObject = JSON.parse(message);
 
-        return (
+        return ( 
             <div className='overflow-auto bg-slate-950 text-white rounded-sm p-2'>
                 <Markdown 
                     // children={message}
@@ -203,6 +215,51 @@ const Project = () => {
                             ))}
                     </div>
                 </div>
+            </section>
+
+            <section className='right bg-red-50 flex-grow h-full flex'>
+                <div className="explorer h-full max-w-64 min-w-64 bg-slate-500">
+                    <div className="file-tree w-full">
+                        {
+                            Object.keys(fileTree).map((file, index) => {
+                                return (
+                                    <button onClick={() => {
+                                        setCurrentFile(file)
+                                        setOpenFiles([...new Set([...openFiles, file])])
+                                    }} key={index} className="tree-element overflow-hidden cursor-pointer p-2 px-4 flex items-center gap-2 bg-slate-200 w-full">
+                                        <p className='font-semibold text-lg'>{file}</p>
+                                    </button>
+                                );
+                            })
+                        }
+                    </div>
+                </div>
+
+                {currentFile && (
+                    <div className="code-editor flex-grow h-full flex flex-col">
+                        <div className="top flex overflow-hidden">
+                            {
+                                openFiles.map((file, index) => (
+                                    <button key={index} onClick={() => setCurrentFile(file)} className={`open-file cursor-pointer p-2 flex items-center gap-2 bg-slate-300`}>
+                                        <p className='font-semibold text-lg'>{file}</p>
+                                    </button>
+                                ))
+                            }
+                        </div>
+                        
+                        <div className="bottom flex flex-grow">
+                            {
+                                fileTree[currentFile] && (
+                                    <textarea value={fileTree[currentFile].content} onChange={(e) => {
+                                        setFileTree({...fileTree, [currentFile]: {
+                                            content: e.target.value
+                                        }})
+                                    }} className='w-full h-full p-4 bg-slate-50 outline-none'></textarea>
+                                )
+                            }
+                        </div>
+                    </div>
+                )}
             </section>
 
             {isModalOpen && (
